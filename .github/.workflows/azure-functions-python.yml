@@ -1,0 +1,42 @@
+name: Deploy Python Function App
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AZURE_FUNCTIONAPP_NAME: "useragent-fastapi"   # e.g. useragent-func-eastus
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "."              # repo root
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Optional: prebuild (you can also let Azure do remote build via Kudu)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install -r requirements.txt
+          # Create a minimal build artifact folder
+          mkdir -p build
+          cp -r * build/
+          rm -rf build/.git build/.github
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: build
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          # For remote build instead of local build uncomment:
+          # scm-do-build-during-deployment: true
+          # enable-oryx-build: true

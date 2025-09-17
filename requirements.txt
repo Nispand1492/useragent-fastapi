@@ -1,0 +1,6 @@
+azure-functions
+fastapi
+python-dotenv
+azure-identity
+azure-ai-projects
+azure-ai-agents
